@@ -1,0 +1,24 @@
+.role-card {
+  background: #fff;
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 16px #e0e7ef;
+  padding: 2rem 1.5rem;
+  min-width: 120px;
+  flex: 1;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  margin: 0 0.5rem;
+  outline: none;
+}
+.role-card:hover, .role-card:focus {
+  transform: translateY(-6px) scale(1.04);
+  box-shadow: 0 8px 32px #b2f7ef;
+  background: #f0fcfa;
+}
+.role-card h3 {
+  margin-bottom: 8px;
+  color: #007bff;
+}
+.role-card p {
+  color: #555;
+}

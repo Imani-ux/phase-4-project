@@ -1,0 +1,78 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(100deg, #007bff 60%, #00c6a7 100%);
+  padding: 1.2rem 2.5rem;
+  min-height: 70px;
+  position: relative;
+  z-index: 10;
+  /* Futuristic angled bottom edge */
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+}
+
+.navbar-logo a {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-decoration: none;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  transition: color 0.2s;
+}
+
+.navbar-logo a:hover {
+  color: #e0ffe7;
+}
+
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 2.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-links li {
+  position: relative;
+}
+
+.navbar-links a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.08rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  transition: 
+    background 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
+  position: relative;
+  z-index: 1;
+}
+
+.navbar-links a:hover,
+.navbar-links a:focus {
+  background: rgba(255,255,255,0.13);
+  color: #00ffd0;
+  box-shadow: 0 2px 12px 0 rgba(0,255,208,0.10);
+}
+
+@media (max-width: 700px) {
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem 1.2rem;
+    clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+  }
+  .navbar-links {
+    gap: 1.2rem;
+    margin-top: 0.7rem;
+  }
+  .navbar-logo a {
+    font-size: 1.4rem;
+  }
+}

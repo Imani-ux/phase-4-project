@@ -1,11 +1,10 @@
+import React from "react";
 
-
-function Landing(){
-    return (
-        <>
-        <h1>Landing</h1>
-        </>
-    )
+export default function Landing() {
+  return (
+    <div>
+      <h1>Kazika Kenya</h1>
+      <p>pata kazi hapa</p>
+    </div>
+  );
 }
-
-export default Landing
