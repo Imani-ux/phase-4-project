@@ -1,15 +1,19 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("Job Seeker");
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`Logging in as ${role} with email: ${email}`);
-    // Here you will call your API later
+    // Redirect based on role
+    if (role === "Admin") navigate("/admin/dashboard");
+    else if (role === "Employer") navigate("/employer/dashboard");
+    else navigate("/seeker/dashboard");
   };
 
   return (

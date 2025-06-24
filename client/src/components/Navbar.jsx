@@ -6,7 +6,7 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-logo">
-        <Link to="/">Kazika Kenya</Link>
+        <Link to="/">⚖️🇰🇪Kazika Kenya</Link>
       </div>
       <ul className="navbar-links">
         <li><Link to="/">Home</Link></li>

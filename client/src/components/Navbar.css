@@ -2,28 +2,37 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(100deg, #007bff 60%, #00c6a7 100%);
+  background: linear-gradient(120deg, #0f0c29, #302b63, #00c6a7);
   padding: 1.2rem 2.5rem;
   min-height: 70px;
   position: relative;
   z-index: 10;
-  /* Futuristic angled bottom edge */
   clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
-  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
 }
 
 .navbar-logo a {
   color: #fff;
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.1rem;
+  font-weight: 800;
   letter-spacing: 2px;
   text-decoration: none;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.10);
-  transition: color 0.2s;
+  text-shadow: 0 4px 20px rgba(0, 255, 208, 0.2);
+  transition: color 0.3s ease;
+  animation: logoGlow 2.5s infinite alternate;
+}
+
+@keyframes logoGlow {
+  from {
+    text-shadow: 0 0 10px #00ffc3;
+  }
+  to {
+    text-shadow: 0 0 20px #00ffc3, 0 0 30px #00c6a7;
+  }
 }
 
 .navbar-logo a:hover {
-  color: #e0ffe7;
+  color: #00ffd0;
 }
 
 .navbar-links {
@@ -41,24 +50,35 @@
 .navbar-links a {
   color: #fff;
   text-decoration: none;
-  font-size: 1.08rem;
+  font-size: 1.1rem;
   font-weight: 500;
   letter-spacing: 1px;
   padding: 0.5rem 1rem;
-  border-radius: 20px;
-  transition: 
-    background 0.2s,
-    color 0.2s,
-    box-shadow 0.2s;
+  border-radius: 25px;
+  transition: all 0.3s ease;
   position: relative;
   z-index: 1;
 }
 
-.navbar-links a:hover,
-.navbar-links a:focus {
-  background: rgba(255,255,255,0.13);
+.navbar-links a::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 3px;
+  background: #00ffd0;
+  bottom: -4px;
+  left: 0;
+  transition: width 0.3s ease;
+}
+
+.navbar-links a:hover::after {
+  width: 100%;
+}
+
+.navbar-links a:hover {
+  background: rgba(255, 255, 255, 0.1);
   color: #00ffd0;
-  box-shadow: 0 2px 12px 0 rgba(0,255,208,0.10);
+  box-shadow: 0 4px 14px rgba(0, 255, 208, 0.2);
 }
 
 @media (max-width: 700px) {
@@ -68,11 +88,20 @@
     padding: 1rem 1.2rem;
     clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
   }
+
   .navbar-links {
     gap: 1.2rem;
     margin-top: 0.7rem;
+    flex-direction: column;
+    width: 100%;
   }
+
+  .navbar-links a {
+    display: block;
+    width: 100%;
+  }
+
   .navbar-logo a {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
   }
 }
