@@ -5,14 +5,8 @@ const demoApplicants = [
   { name: "John Smith", skills: "Python, Django", experience: "2 years", cv: "#" },
 ];
 
-const demoJobs = [
-  { id: 1, title: "Frontend Developer", views: 120, applicants: 2, saves: 10 },
-  { id: 2, title: "Backend Developer", views: 80, applicants: 1, saves: 5 },
-];
-
-export default function EmployerDashboard() {
+export default function EmployerDashboard({ jobs, setJobs }) {
   const [section, setSection] = useState("Dashboard");
-  const [jobs, setJobs] = useState(demoJobs);
   const [applicants, setApplicants] = useState(demoApplicants);
   const [showJobForm, setShowJobForm] = useState(false);
   const [jobTitle, setJobTitle] = useState("");
@@ -35,6 +29,10 @@ export default function EmployerDashboard() {
       {
         id: jobs.length + 1,
         title: jobTitle,
+        company: profile.company,
+        location: "Nairobi",
+        type: "Full-time",
+        description: jobDesc,
         views: 0,
         applicants: 0,
         saves: 0,
