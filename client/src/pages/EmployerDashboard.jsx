@@ -1,64 +1,85 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const demoApplicants = [
-  { name: "Jane Doe", skills: "React, Node.js", experience: "3 years", cv: "#" },
-  { name: "John Smith", skills: "Python, Django", experience: "2 years", cv: "#" },
-];
-
-export default function EmployerDashboard({ jobs, setJobs }) {
+export default function EmployerDashboard() {
   const [section, setSection] = useState("Dashboard");
-  const [applicants, setApplicants] = useState(demoApplicants);
-  const [showJobForm, setShowJobForm] = useState(false);
+  const [jobs, setJobs] = useState([]);
+  const [applicants, setApplicants] = useState([]);
   const [jobTitle, setJobTitle] = useState("");
   const [jobDesc, setJobDesc] = useState("");
-  const [notifications] = useState([
-    "New applicant for Frontend Developer",
-    "Message from Jane Doe",
-  ]);
-  const [profile, setProfile] = useState({
-    company: "Acme Corp",
-    logo: "",
-    email: "hr@acme.com",
-  });
+  const [showJobForm, setShowJobForm] = useState(false);
+  const [notifications] = useState(["New applicant for Frontend Developer", "Message from Jane Doe"]);
 
-    const handlePostJob = (e) => {
-    e.preventDefault();
-    setJobs([
-      ...jobs,
-      {
-        id: jobs.length + 1,
-        title: jobTitle,
-        company: profile.company,
-        location: "Nairobi",
-        type: "Full-time",
-        description: jobDesc, 
-        views: 0,
-        applicants: 0,
-        saves: 0,
-      },
-    ]);
-    setJobTitle("");
-    setJobDesc("");
-    setShowJobForm(false);
-    setSection("My Job Listings");
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  useEffect(() => {
+    fetchEmployerJobs();
+  }, []);
+
+  const fetchEmployerJobs = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/jobs/employer/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setJobs(data.jobs || []);
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+    }
   };
 
-  const handleDeleteJob = (id) => {
-    setJobs(jobs.filter((job) => job.id !== id));
+  const handlePostJob = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("http://localhost:5000/jobs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: jobTitle,
+          description: jobDesc,
+          location: "Nairobi",
+          type: "Full-time",
+          employer_id: user.id,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setJobs([...jobs, data.job]);
+        setJobTitle("");
+        setJobDesc("");
+        setShowJobForm(false);
+        setSection("My Job Listings");
+      } else {
+        alert(data.error || "Failed to post job");
+      }
+    } catch (err) {
+      console.error("Error posting job:", err);
+    }
+  };
+
+  const handleDeleteJob = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:5000/jobs/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setJobs(jobs.filter((job) => job.id !== id));
+      } else {
+        alert("Failed to delete job");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
   };
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)" }}>
-      <aside style={{
-        width: "240px",
-        background: "#1a1a2e",
-        color: "#eee",
-        padding: "2rem 1rem",
-        boxShadow: "2px 0 12px rgba(0,0,0,0.3)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1.5rem"
-      }}>
+      <aside style={sidebarStyle}>
         <h3 style={{ color: "#00c6a7", fontSize: "1.6rem" }}>Employer Panel</h3>
         <nav>
           <ul style={{ listStyle: "none", padding: 0 }}>
@@ -107,7 +128,7 @@ export default function EmployerDashboard({ jobs, setJobs }) {
                   <li key={job.id} style={jobCardStyle}>
                     <div>
                       <strong>{job.title}</strong>
-                      <p style={{ margin: "0.5rem 0" }}>Views: {job.views} | Applicants: {job.applicants} | Saves: {job.saves}</p>
+                      <p style={{ margin: "0.5rem 0" }}>Location: {job.location} | Type: {job.type}</p>
                     </div>
                     <div>
                       <button style={editBtnStyle}>Edit</button>
@@ -123,30 +144,25 @@ export default function EmployerDashboard({ jobs, setJobs }) {
         {section === "Applicants" && (
           <div>
             <h2>Applicants</h2>
-            {applicants.length === 0 ? <p>No applicants yet.</p> : (
-              <ul style={{ padding: 0 }}>
-                {applicants.map((a, idx) => (
-                  <li key={idx} style={applicantCardStyle}>
-                    <div>
-                      <strong>{a.name}</strong>
-                      <p>Skills: {a.skills}</p>
-                      <p>Experience: {a.experience}</p>
-                    </div>
-                    <div>
-                      <a href={a.cv} target="_blank" rel="noopener noreferrer" style={cvBtnStyle}>Download CV</a>
-                      <button style={inviteBtnStyle}>Invite</button>
-                      <button style={favBtnStyle}>★</button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <p>Applicant view per job will be implemented soon.</p>
           </div>
         )}
       </main>
     </div>
   );
 }
+
+// Styles & Components
+const sidebarStyle = {
+  width: "240px",
+  background: "#1a1a2e",
+  color: "#eee",
+  padding: "2rem 1rem",
+  boxShadow: "2px 0 12px rgba(0,0,0,0.3)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "1.5rem"
+};
 
 function navBtnStyle(active) {
   return {
@@ -227,46 +243,6 @@ const editBtnStyle = {
 const deleteBtnStyle = {
   background: "#ff4d4f",
   color: "#fff",
-  border: "none",
-  borderRadius: "0.4rem",
-  padding: "0.4rem 1rem",
-  cursor: "pointer"
-};
-
-const applicantCardStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  background: "#1f2937",
-  borderRadius: "0.7rem",
-  padding: "1rem 1.5rem",
-  marginBottom: "1rem",
-  color: "#fff"
-};
-
-const cvBtnStyle = {
-  background: "#007bff",
-  color: "#fff",
-  border: "none",
-  borderRadius: "0.4rem",
-  padding: "0.4rem 1rem",
-  marginRight: "0.5rem",
-  textDecoration: "none"
-};
-
-const inviteBtnStyle = {
-  background: "#00c6a7",
-  color: "#fff",
-  border: "none",
-  borderRadius: "0.4rem",
-  padding: "0.4rem 1rem",
-  marginRight: "0.5rem",
-  cursor: "pointer"
-};
-
-const favBtnStyle = {
-  background: "#2c2c54",
-  color: "#ffd700",
   border: "none",
   borderRadius: "0.4rem",
   padding: "0.4rem 1rem",

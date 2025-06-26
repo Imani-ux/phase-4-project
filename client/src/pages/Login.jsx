@@ -5,26 +5,46 @@ import "./Login.css";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("Job Seeker");
   const navigate = useNavigate();
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Redirect based on role
-    if (role === "Admin") navigate("/admin/dashboard");
-    else if (role === "Employer") navigate("/employer/dashboard");
-    else navigate("/seeker/dashboard");
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:5000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Login failed");
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      const role = data.user.role;
+
+      if (role === "admin") navigate("/admin/dashboard");
+      else if (role === "employer") navigate("/employer/dashboard");
+      else navigate("/seeker/dashboard");
+
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Something went wrong");
+    }
   };
 
   return (
     <div className="login-container">
       <h2 className="login-title">Login</h2>
       <form onSubmit={handleSubmit} className="login-form">
-        <select value={role} onChange={e => setRole(e.target.value)}>
-          <option>Job Seeker</option>
-          <option>Employer</option>
-          <option>Admin</option>
-        </select>
         <input
           type="email"
           placeholder="Email"
@@ -39,9 +59,8 @@ export default function Login() {
           onChange={e => setPassword(e.target.value)}
           required
         />
-        <button type="submit">
-          Login
-        </button>
+        <button type="submit">Login</button>
+        {error && <p className="error">{error}</p>}
       </form>
     </div>
   );

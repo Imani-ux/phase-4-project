@@ -1,16 +1,51 @@
 import React, { useState } from "react";
-import "./Login.css"; // Reuse the login styles for consistency
+import { useNavigate } from "react-router-dom";
+import "./Login.css";
 
 export default function Register() {
-  const [role, setRole] = useState("Job Seeker");
+  const [role, setRole] = useState("seeker");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Registering as ${role} with email: ${email}`);
-    // Here you will call your API later
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:5000/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: name,
+          email,
+          password,
+          role, // already in the correct format
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Registration failed");
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      const userRole = data.user.role;
+
+      if (userRole === "admin") navigate("/admin/dashboard");
+      else if (userRole === "employer") navigate("/employer/dashboard");
+      else navigate("/seeker/dashboard");
+
+    } catch (err) {
+      console.error("Register error:", err);
+      setError("Something went wrong");
+    }
   };
 
   return (
@@ -18,9 +53,9 @@ export default function Register() {
       <h2 className="login-title">Register</h2>
       <form onSubmit={handleSubmit} className="login-form">
         <select value={role} onChange={e => setRole(e.target.value)}>
-          <option>Job Seeker</option>
-          <option>Employer</option>
-          <option>Admin</option>
+          <option value="seeker">Job Seeker</option>
+          <option value="employer">Employer</option>
+          <option value="admin">Admin</option>
         </select>
         <input
           type="text"
@@ -43,9 +78,8 @@ export default function Register() {
           onChange={e => setPassword(e.target.value)}
           required
         />
-        <button type="submit">
-          Register
-        </button>
+        <button type="submit">Register</button>
+        {error && <p className="error">{error}</p>}
       </form>
     </div>
   );
