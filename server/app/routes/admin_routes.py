@@ -3,8 +3,9 @@ from app.controllers.user_controller import get_all_users, get_user_by_id, delet
 from app.controllers.job_controller import get_all_jobs, delete_job
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+#SAM
 
-# Get all users
+# Get all users 
 @admin_bp.route("/users", methods=["GET"])
 def list_users():
     users = get_all_users()

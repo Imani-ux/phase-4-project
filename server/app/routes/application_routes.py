@@ -8,6 +8,7 @@ from app.controllers.application_controller import (
 )
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.database import db_session
+#sam Tevin
 
 application_bp = Blueprint("applications", __name__, url_prefix="/applications")
 

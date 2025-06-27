@@ -3,6 +3,7 @@ from app.database import db_session
 from app.models import User, RoleEnum
 from app.utils.auth_utils import hash_password, check_password
 from app.utils.jwt_handler import generate_token
+#Sam
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")  # ✅ Renamed from auth_routes to auth_bp
 

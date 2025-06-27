@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.controllers.review_controller import create_review, get_reviews_for_user
 
 review_bp = Blueprint("reviews", __name__, url_prefix="/reviews")
-
+#TEVIN AND SAM
 @review_bp.route("/", methods=["POST"])
 def post_review():
     data = request.get_json()
