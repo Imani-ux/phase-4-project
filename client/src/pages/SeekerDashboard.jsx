@@ -167,9 +167,12 @@ export default function SeekerDashboard() {
                   <div key={job.id} style={jobCardStyle}>
                     <div>
                       <h3>{job.title}</h3>
-                      <p><strong>Company:</strong> {job.company_name}<br />
-                         <strong>Location:</strong> {job.location}<br />
-                         <strong>Type:</strong> {job.type}</p>
+                      <p>
+                        <strong>Location:</strong> {job.location}<br />
+                        <strong>Type:</strong> {job.type}<br />
+                        <strong>Employer:</strong> {job.employer?.full_name || "N/A"}<br />
+                        <strong>Email:</strong> {job.employer?.email || "N/A"}
+                      </p>
                       <p>{job.description}</p>
                     </div>
                     <div>
@@ -187,7 +190,6 @@ export default function SeekerDashboard() {
             </div>
           </div>
         )}
-
         {section === "My Applications" && (
           <div>
             <h2>My Applications</h2>
@@ -197,7 +199,7 @@ export default function SeekerDashboard() {
               <ul>
                 {jobs.filter(job => applied.includes(job.id)).map(job => (
                   <li key={job.id} style={applicationCardStyle}>
-                    <strong>{job.title}</strong> at {job.company_name} — <span style={{ color: "#00c6a7" }}>Pending</span>
+                    <strong>{job.title}</strong> — <span style={{ color: "#00c6a7" }}>Pending/Accepted/Declined</span>
                   </li>
                 ))}
               </ul>
@@ -279,3 +281,4 @@ const appliedBtnStyle = {
   color: "#888",
   cursor: "not-allowed"
 };
+

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, Enum, DateTime, func
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, Enum, DateTime, func, Boolean
 from sqlalchemy.orm import relationship, declarative_base
 import enum
 
@@ -73,7 +73,14 @@ class Job(Base):
             "location": self.location,
             "type": self.type,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "employer_id": self.employer_id
+            "employer_id": self.employer_id,
+            "employer": {
+                "id": self.employer.id if self.employer else None,
+                "full_name": self.employer.full_name if self.employer else None,
+                "email": self.employer.email if self.employer else None,
+                "bio": self.employer.bio if self.employer else None,
+                "skills": self.employer.skills if self.employer else None,
+            }
         }
 
 # --- Application Model ---
@@ -153,4 +160,25 @@ class Review(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "reviewer_id": self.reviewer_id,
             "reviewed_id": self.reviewed_id,
+        }
+
+# --- Notification Model ---
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True)
+    employer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    message = Column(Text, nullable=False)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    employer = relationship("User")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "employer_id": self.employer_id,
+            "message": self.message,
+            "is_read": self.is_read,
+            "created_at": self.created_at.isoformat() if self.created_at else None
         }

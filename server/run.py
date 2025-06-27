@@ -17,7 +17,7 @@ from app.routes.review_routes import review_bp
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    CORS(app)
+    CORS(app, supports_credentials=True)  # More permissive for dev
 
     # JWT setup
     jwt = JWTManager(app)

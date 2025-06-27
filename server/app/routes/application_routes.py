@@ -7,6 +7,7 @@ from app.controllers.application_controller import (
     delete_application,
 )
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.database import db_session
 
 application_bp = Blueprint("applications", __name__, url_prefix="/applications")
 
@@ -68,3 +69,25 @@ def delete_app(application_id):
     if not success:
         return jsonify({"error": "Application not found"}), 404
     return jsonify({"message": "Application deleted"}), 200
+
+@application_bp.route("/<int:application_id>/accept", methods=["PUT"])
+@jwt_required()
+def accept_application(application_id):
+    from app.models import Application
+    app = db_session.query(Application).filter_by(id=application_id).first()
+    if not app:
+        return jsonify({"error": "Application not found"}), 404
+    app.status = "Accepted"
+    db_session.commit()
+    return jsonify({"message": "Application accepted"}), 200
+
+@application_bp.route("/<int:application_id>/decline", methods=["PUT"])
+@jwt_required()
+def decline_application(application_id):
+    from app.models import Application
+    app = db_session.query(Application).filter_by(id=application_id).first()
+    if not app:
+        return jsonify({"error": "Application not found"}), 404
+    app.status = "Declined"
+    db_session.commit()
+    return jsonify({"message": "Application declined"}), 200

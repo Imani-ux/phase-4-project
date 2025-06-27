@@ -7,6 +7,8 @@ from app.controllers.job_controller import (
     delete_job,
     get_jobs_by_employer_id
 )
+from app.models import User, RoleEnum, Notification, Application
+from app.database import db_session
 
 job_bp = Blueprint("jobs", __name__, url_prefix="/jobs")
 
@@ -28,11 +30,38 @@ def post_job():
     current_user = get_jwt_identity()
     data = request.get_json()
 
+    # Validate required fields
     if not data or not data.get("title") or not data.get("description"):
         return jsonify({"error": "Missing required job fields"}), 400
 
-    job = create_job(data, employer_id=current_user)
-    return jsonify({"job": job.to_dict()}), 201
+    try:
+        employer_id = int(current_user)
+    except Exception:
+        return jsonify({"error": "Invalid employer id"}), 400
+
+    # Check if employer exists and is of role employer
+    employer = db_session.query(User).filter_by(id=employer_id).first()
+    if not employer:
+        return jsonify({"error": "Employer user does not exist"}), 400
+    if employer.role != RoleEnum.employer:
+        return jsonify({"error": "Only users with employer role can post jobs"}), 403
+
+    # Map frontend `description` to backend `job_description`
+    job_data = {
+        "title": data["title"],
+        "job_description": data["description"],
+        "location": data.get("location", ""),
+        "type": data.get("type", "")
+    }
+
+    try:
+        job = create_job(job_data, employer_id=employer_id)
+        return jsonify({"job": job.to_dict()}), 201
+    except Exception as e:
+        import traceback
+        print("ERROR in /jobs/ POST route:", str(e))
+        traceback.print_exc()
+        return jsonify({"error": f"Failed to create job: {str(e)}"}), 422
 
 @job_bp.route("/employer/<int:employer_id>", methods=["GET"])
 @jwt_required()
@@ -44,7 +73,90 @@ def list_jobs_by_employer(employer_id):
 @jwt_required()
 def remove_job(job_id):
     current_user = get_jwt_identity()
-    success = delete_job(job_id, employer_id=current_user)
+    try:
+        employer_id = int(current_user)
+    except Exception:
+        return jsonify({"error": "Invalid employer id"}), 400
+    success = delete_job(job_id, employer_id=employer_id)
     if not success:
         return jsonify({"error": "Job not found or not authorized"}), 404
     return jsonify({"message": "Job deleted"}), 200
+
+@job_bp.route("/<int:job_id>", methods=["PUT"])
+@jwt_required()
+def update_job(job_id):
+    current_user = get_jwt_identity()
+    try:
+        employer_id = int(current_user)
+    except Exception:
+        return jsonify({"error": "Invalid employer id"}), 400
+
+    data = request.get_json()
+    from app.models import Job
+    from app.database import db_session
+
+    job = db_session.query(Job).filter_by(id=job_id, employer_id=employer_id).first()
+    if not job:
+        return jsonify({"error": "Job not found or not authorized"}), 404
+
+    # Update fields if provided
+    if "title" in data:
+        job.title = data["title"]
+    if "description" in data:
+        job.job_description = data["description"]
+    if "location" in data:
+        job.location = data["location"]
+    if "type" in data:
+        job.type = data["type"]
+
+    db_session.commit()
+    return jsonify({"job": job.to_dict()}), 200
+
+@job_bp.route("/notifications", methods=["GET"])
+@jwt_required()
+def get_notifications():
+    current_user = get_jwt_identity()
+    employer_id = int(current_user)
+    notifs = db_session.query(Notification).filter_by(employer_id=employer_id).order_by(Notification.created_at.desc()).all()
+    return jsonify([n.to_dict() for n in notifs]), 200
+
+@job_bp.route("/<int:job_id>/applicants", methods=["GET"])
+@jwt_required()
+def get_applicants_for_job(job_id):
+    # Get all applicants for a job
+    apps = db_session.query(Application).filter_by(job_id=job_id).all()
+    result = []
+    for app in apps:
+        user = db_session.query(User).filter_by(id=app.user_id).first()
+        if user:
+            result.append({
+                "application_id": app.id,
+                "user_id": user.id,
+                "full_name": user.full_name,
+                "email": user.email,
+                "role": user.role.value,
+                "bio": user.bio,
+                "skills": user.skills,
+                "resume_url": user.resume_url,
+                "status": app.status,
+                "applied_at": app.created_at.isoformat() if app.created_at else None
+            })
+    return jsonify(result), 200
+
+@job_bp.route("/applicants/<int:user_id>", methods=["PUT"])
+@jwt_required()
+def update_applicant_profile(user_id):
+    data = request.get_json()
+    user = db_session.query(User).filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Allow employer to update applicant's bio, skills, resume_url, and role
+    user.full_name = data.get("full_name", user.full_name)
+    user.bio = data.get("bio", user.bio)
+    user.skills = data.get("skills", user.skills)
+    user.resume_url = data.get("resume_url", user.resume_url)
+    if "role" in data and data["role"] in [r.value for r in RoleEnum]:
+        user.role = RoleEnum(data["role"])
+    db_session.commit()
+    return jsonify({"message": "Applicant profile updated", "user": user.to_dict()}), 200
