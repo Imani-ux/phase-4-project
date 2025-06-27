@@ -1,10 +1,12 @@
 import React from "react";
 import RoleCard from "../components/RoleCard";
+import { useNavigate } from "react-router-dom";
 
 export default function SelectRole() {
+  const navigate = useNavigate();
+
   const handleSelect = (role) => {
-    alert(`Selected: ${role}`);
-    // You can navigate or set state here later
+    navigate("/login");
   };
 
   return (

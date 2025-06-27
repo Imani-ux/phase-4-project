@@ -24,7 +24,7 @@ export default function SeekerDashboard() {
 
   const fetchJobs = async () => {
     try {
-      const res = await fetch("http://localhost:5000/jobs", {
+      const res = await fetch("http://localhost:5000/jobs/", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -97,10 +97,15 @@ export default function SeekerDashboard() {
         },
         body: JSON.stringify({ job_id: jobId }),
       });
-
-      if (res.ok) setApplied([...applied, jobId]);
+      const data = await res.json();
+      if (res.ok) {
+        setApplied([...applied, jobId]);
+        // Optionally show a success message
+      } else {
+        alert(data.error || "Failed to apply for job");
+      }
     } catch (err) {
-      console.error("Application failed", err);
+      alert("Application failed: " + err.message);
     }
   };
 

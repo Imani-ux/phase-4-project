@@ -23,6 +23,10 @@ export default function Login() {
 
       if (!response.ok) {
         setError(data.error || "Login failed");
+        // Redirect to register if user not found
+        if (data.error && data.error.toLowerCase().includes("invalid email")) {
+          setTimeout(() => navigate("/register"), 1200);
+        }
         return;
       }
 

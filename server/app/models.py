@@ -24,6 +24,7 @@ class User(Base):
     bio = Column(Text)
     skills = Column(Text)
     resume_url = Column(String(255))
+    company_name = Column(Text, nullable=True)  # Add this line
 
     # Relationships
     jobs = relationship("Job", back_populates="employer", cascade="all, delete-orphan")
@@ -43,7 +44,8 @@ class User(Base):
             "role": self.role.value,
             "bio": self.bio,
             "skills": self.skills,
-            "resume_url": self.resume_url
+            "resume_url": self.resume_url,
+            "company_name": self.company_name,
         }
 
 # --- Job Model ---
@@ -171,6 +173,7 @@ class Notification(Base):
     message = Column(Text, nullable=False)
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    application_id = Column(Integer, ForeignKey("applications.id"), nullable=True)  # Add this line
 
     employer = relationship("User")
 
@@ -180,5 +183,6 @@ class Notification(Base):
             "employer_id": self.employer_id,
             "message": self.message,
             "is_read": self.is_read,
-            "created_at": self.created_at.isoformat() if self.created_at else None
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "application_id": self.application_id
         }

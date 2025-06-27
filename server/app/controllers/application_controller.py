@@ -1,5 +1,5 @@
 from app.database import db_session
-from app.models import Application, Job, Notification
+from app.models import Application, Job, Notification, User
 from datetime import datetime
 
 def apply_to_job(user_id, job_id):
@@ -15,13 +15,16 @@ def apply_to_job(user_id, job_id):
         created_at=datetime.utcnow()
     )
     db_session.add(application)
+    db_session.flush()  # Get application.id before commit
 
-    # Create notification for employer
+    # Create notification for employer with applicant name and application id
     job = db_session.query(Job).filter_by(id=job_id).first()
-    if job:
+    user = db_session.query(User).filter_by(id=user_id).first()
+    if job and user:
         notif = Notification(
             employer_id=job.employer_id,
-            message=f"New applicant (User ID: {user_id}) for your job '{job.title}'"
+            message=f"New applicant {user.full_name} for your job '{job.title}'",
+            application_id=application.id  # You may need to add this column to Notification model
         )
         db_session.add(notif)
 

@@ -336,9 +336,44 @@ export default function EmployerDashboard() {
                     borderRadius: "0.5rem",
                     marginBottom: "1rem",
                     padding: "1rem",
-                    boxShadow: "0 2px 8px #e0e7ef"
+                    boxShadow: "0 2px 8px #e0e7ef",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between"
                   }}>
-                    {note.message}
+                    <span>
+                      {note.applicant_name
+                        ? <>New applicant <b>{note.applicant_name}</b> for your job.<br /></>
+                        : note.message}
+                    </span>
+                    {note.application_id && (
+                      <span>
+                        <button
+                          style={primaryBtnStyle}
+                          onClick={async () => {
+                            await fetch(`http://localhost:5000/applications/${note.application_id}/accept`, {
+                              method: "PUT",
+                              headers: { Authorization: `Bearer ${token}` }
+                            });
+                            fetchNotifications();
+                          }}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          style={deleteBtnStyle}
+                          onClick={async () => {
+                            await fetch(`http://localhost:5000/applications/${note.application_id}/decline`, {
+                              method: "PUT",
+                              headers: { Authorization: `Bearer ${token}` }
+                            });
+                            fetchNotifications();
+                          }}
+                        >
+                          Decline
+                        </button>
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
