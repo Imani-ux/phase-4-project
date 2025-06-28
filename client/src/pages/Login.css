@@ -1,72 +1,71 @@
-.login-container {
+/* Login and Register */
+.auth-container {
   max-width: 400px;
-  margin: 4rem auto;
-  background: #fff;
-  border-radius: 1.2rem;
-  box-shadow: 0 4px 32px #e0e7ef;
-  padding: 2.5rem 2rem 2rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  margin: 5rem auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
-.login-title {
+.auth-container h2 {
   text-align: center;
   margin-bottom: 2rem;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #007bff;
-  letter-spacing: 1px;
+  color: #1e293b;
 }
 
-.login-form {
-  width: 100%;
+.auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1.3rem;
+  gap: 1.2rem;
 }
 
-.login-form select,
-.login-form input {
-  padding: 0.85rem 1rem;
-  border-radius: 0.7rem;
-  border: 1.5px solid #e0e7ef;
+.auth-form input,
+.auth-form select {
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
   font-size: 1rem;
-  background: #f8fafc;
-  transition: border 0.2s, box-shadow 0.2s;
-}
-
-.login-form select:focus,
-.login-form input:focus {
-  border: 1.5px solid #00c6a7;
   outline: none;
-  box-shadow: 0 0 0 2px #00c6a733;
+  transition: border-color 0.2s ease;
 }
 
-.login-form button {
-  padding: 0.9rem;
-  border-radius: 0.7rem;
-  background: linear-gradient(100deg, #007bff 60%, #00c6a7 100%);
-  color: #fff;
+.auth-form input:focus,
+.auth-form select:focus {
+  border-color: #0ea5e9;
+}
+
+.auth-form button {
+  background-color: #0ea5e9;
+  color: white;
+  padding: 0.75rem;
   border: none;
-  font-weight: 700;
-  font-size: 1.1rem;
-  letter-spacing: 1px;
+  border-radius: 0.5rem;
+  font-size: 1rem;
   cursor: pointer;
-  box-shadow: 0 2px 12px #e0e7ef;
-  transition: background 0.2s, transform 0.2s;
+  transition: background 0.3s ease;
 }
 
-.login-form button:hover {
-  background: linear-gradient(100deg, #0056b3 60%, #00a68a 100%);
-  transform: translateY(-2px) scale(1.02);
+.auth-form button:hover {
+  background-color: #0369a1;
 }
-
-@media (max-width: 500px) {
-  .login-container {
-    padding: 1.2rem 0.5rem;
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar-links {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
   }
-  .login-title {
-    font-size: 1.3rem;
+
+  .landing h1 {
+    font-size: 2rem;
+  }
+
+  .landing p {
+    font-size: 1rem;
+  }
+
+  .auth-container {
+    margin: 2rem;
   }
 }
