@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import "./seeker-dashboard.css"; // 👈 Make sure you import the futuristic CSS
 
 export default function SeekerDashboard() {
   const [section, setSection] = useState("My Profile");
@@ -8,7 +9,7 @@ export default function SeekerDashboard() {
     full_name: "",
     bio: "",
     skills: "",
-    resume_url: ""
+    resume_url: "",
   });
 
   const token = localStorage.getItem("token");
@@ -74,14 +75,12 @@ export default function SeekerDashboard() {
       });
       const data = await res.json();
       if (!res.ok) {
-        console.error("Profile update failed:", data.error || data);
         alert("Update failed: " + (data.error || "Invalid data."));
       } else {
         alert("Profile updated successfully!");
-        setProfile(data.user); // Ensure form reflects saved data
+        setProfile(data.user);
       }
     } catch (err) {
-      console.error("Profile update error", err);
       alert("An error occurred while updating your profile.");
     }
   };
@@ -100,7 +99,6 @@ export default function SeekerDashboard() {
       const data = await res.json();
       if (res.ok) {
         setApplied([...applied, jobId]);
-        // Optionally show a success message
       } else {
         alert(data.error || "Failed to apply for job");
       }
@@ -110,33 +108,33 @@ export default function SeekerDashboard() {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "80vh", background: "#f6fafd" }}>
-      <aside style={asideStyle}>
-        <h3 style={{ color: "#007bff", marginBottom: "2rem" }}>My Dashboard</h3>
-        <nav>
-          <ul style={{ listStyle: "none", padding: 0, lineHeight: "2.2" }}>
-            {["My Profile", "Browse Jobs", "My Applications", "Messages", "Settings"].map((label) => (
-              <li key={label}>
-                <button onClick={() => setSection(label)} style={navBtnStyle(section === label)}>
-                  {label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+    <div className="dashboard">
+      <aside className="dashboard-aside">
+        <h3>My Dashboard</h3>
+        <ul>
+          {["My Profile", "Browse Jobs", "My Applications", "Messages", "Settings"].map((label) => (
+            <li key={label}>
+              <button
+                className={section === label ? "active" : ""}
+                onClick={() => setSection(label)}
+              >
+                {label}
+              </button>
+            </li>
+          ))}
+        </ul>
       </aside>
 
-      <main style={{ flex: 1, padding: "2.5rem 3rem" }}>
+      <main className="dashboard-main">
         {section === "My Profile" && (
           <div>
             <h2>My Profile</h2>
-            <form onSubmit={updateProfile} style={{ maxWidth: "500px", display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <form onSubmit={updateProfile} className="profile-form">
               <input
                 type="text"
                 placeholder="Full Name"
                 value={profile.full_name}
                 onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                required
               />
               <textarea
                 placeholder="Bio"
@@ -156,7 +154,7 @@ export default function SeekerDashboard() {
                 value={profile.resume_url}
                 onChange={(e) => setProfile({ ...profile, resume_url: e.target.value })}
               />
-              <button type="submit" style={applyBtnStyle}>Update Profile</button>
+              <button type="submit" className="btn-update">Update Profile</button>
             </form>
           </div>
         )}
@@ -164,12 +162,12 @@ export default function SeekerDashboard() {
         {section === "Browse Jobs" && (
           <div>
             <h2>Browse Jobs</h2>
-            <div style={{ margin: "1.5rem 0", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
               {jobs.length === 0 ? (
                 <p>No jobs available yet.</p>
               ) : (
                 jobs.map((job) => (
-                  <div key={job.id} style={jobCardStyle}>
+                  <div key={job.id} className="job-card">
                     <div>
                       <h3>{job.title}</h3>
                       <p>
@@ -182,7 +180,7 @@ export default function SeekerDashboard() {
                     </div>
                     <div>
                       <button
-                        style={applied.includes(job.id) ? appliedBtnStyle : applyBtnStyle}
+                        className={applied.includes(job.id) ? "btn-applied" : "btn-apply"}
                         disabled={applied.includes(job.id)}
                         onClick={() => handleApply(job.id)}
                       >
@@ -195,6 +193,7 @@ export default function SeekerDashboard() {
             </div>
           </div>
         )}
+
         {section === "My Applications" && (
           <div>
             <h2>My Applications</h2>
@@ -203,8 +202,8 @@ export default function SeekerDashboard() {
             ) : (
               <ul>
                 {jobs.filter(job => applied.includes(job.id)).map(job => (
-                  <li key={job.id} style={applicationCardStyle}>
-                    <strong>{job.title}</strong> — <span style={{ color: "#00c6a7" }}>Pending/Accepted/Declined</span>
+                  <li key={job.id} className="application-card">
+                    <strong>{job.title}</strong> — <span style={{ color: "#00c6a7" }}>Pending</span>
                   </li>
                 ))}
               </ul>
@@ -223,67 +222,3 @@ export default function SeekerDashboard() {
     </div>
   );
 }
-
-// --- Styles ---
-const asideStyle = {
-  width: "220px",
-  background: "#fff",
-  boxShadow: "2px 0 12px #e0e7ef",
-  padding: "2rem 1rem",
-  display: "flex",
-  flexDirection: "column",
-  gap: "2rem"
-};
-
-function navBtnStyle(active) {
-  return {
-    background: "none",
-    border: "none",
-    color: active ? "#007bff" : "#333",
-    fontWeight: active ? "bold" : "normal",
-    cursor: "pointer",
-    width: "100%",
-    textAlign: "left",
-    padding: "0.5rem 0"
-  };
-}
-
-const jobCardStyle = {
-  background: "#fff",
-  borderRadius: "1rem",
-  boxShadow: "0 2px 12px #e0e7ef",
-  padding: "1.5rem",
-  minWidth: "260px",
-  maxWidth: "320px",
-  flex: "1 1 300px",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "space-between",
-  marginBottom: "1rem"
-};
-
-const applicationCardStyle = {
-  marginBottom: "1rem",
-  background: "#fff",
-  padding: "1rem",
-  borderRadius: "0.5rem",
-  boxShadow: "0 2px 8px #e0e7ef"
-};
-
-const applyBtnStyle = {
-  background: "#00c6a7",
-  color: "#fff",
-  border: "none",
-  borderRadius: "0.5rem",
-  padding: "0.7rem 1.5rem",
-  cursor: "pointer",
-  fontWeight: "bold"
-};
-
-const appliedBtnStyle = {
-  ...applyBtnStyle,
-  background: "#eee",
-  color: "#888",
-  cursor: "not-allowed"
-};
-
