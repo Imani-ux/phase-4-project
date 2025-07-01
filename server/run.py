@@ -19,18 +19,13 @@ def create_app():
     app.config.from_object(Config)
     CORS(app)  # Enable CORS for all routes
 
-    # JWT setup
     jwt = JWTManager(app)
-
-    # DB setup
     Base.metadata.create_all(bind=engine)
 
-    # Root route
     @app.route("/")
     def home():
         return jsonify({"message": "Kazika Kenya backend is running ✅"}), 200
 
-    # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(job_bp)
@@ -38,7 +33,6 @@ def create_app():
     app.register_blueprint(message_bp)
     app.register_blueprint(review_bp)
 
-    # Optional: print registered routes (for debugging)
     print("\n📌 Registered Routes:")
     for rule in app.url_map.iter_rules():
         print(f"{', '.join(rule.methods)}\t{rule.rule}")
@@ -46,7 +40,8 @@ def create_app():
 
     return app
 
+# 🔥 This line is now at the module level, so gunicorn can find it
+app = create_app()
 
 if __name__ == "__main__":
-    app = create_app()
     app.run(debug=True)
