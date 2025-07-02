@@ -7,7 +7,7 @@ A UX‑focused web application deployed at [phase‑4‑project‑kazika.netlify
 ##  Live Demo
 
 Check out the deployed application:  
-👉 [https://phase-4-project-kazika.netlify.app/](https://phase-4-project-kazika.netlify.app/)
+[https://phase-4-project-kazika.netlify.app/](https://phase-4-project-kazika.netlify.app/)
 
 ---
 
@@ -29,10 +29,10 @@ Check out the deployed application:
 
 ## Features
 
-- ✅ [Feature One] – e.g., User authentication with JWT  
-- ✅ [Feature Two] – e.g., Form handling and validation  
-- ✅ [Feature Three] – e.g., Interactive UI using React Hooks  
-- ✅ [Feature Four] – e.g., Responsive design with CSS modules or Tailwind
+-  [Feature One] – e.g., User authentication with JWT  
+- [Feature Two] – e.g., Form handling and validation  
+- [Feature Three] – e.g., Interactive UI using React Hooks  
+- [Feature Four] – e.g., Responsive design with CSS modules or Tailwind
 
 ---
 
@@ -49,7 +49,7 @@ Check out the deployed application:
 
 ### 1. Clone the repo
 
-```bash
+
 git clone https://github.com/Imani-ux/phase-4-project.git
 cd phase-4-project
 2. Install dependencies
