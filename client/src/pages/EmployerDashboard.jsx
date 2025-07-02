@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import "./EmployerDashboard.css"; 
 
-// Suppress React DevTools installation prompt
 if (typeof window !== 'undefined') {
   window.__REACT_DEVTOOLS_HOOK__ = { inject: () => {} };
 }
+
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const TOWNS = [
   "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret", "Thika", "Kitale", 
@@ -26,12 +27,7 @@ export default function EmployerDashboard() {
   const [applicantsByJob, setApplicantsByJob] = useState({});
   const [editingApplicant, setEditingApplicant] = useState(null);
   const [editingApplicantData, setEditingApplicantData] = useState({});
-  const [profile, setProfile] = useState({
-    full_name: "",
-    bio: "",
-    skills: "",
-    resume_url: ""
-  });
+  const [profile, setProfile] = useState({ full_name: "", bio: "", skills: "", resume_url: "" });
   const [profileLoading, setProfileLoading] = useState(false);
 
   const token = localStorage.getItem("token");
@@ -39,14 +35,9 @@ export default function EmployerDashboard() {
 
   const fetchEmployerJobs = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/jobs/employer/${user.id}`, {
+      const res = await fetch(`${API_BASE}/jobs/employer/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
-      if (!res.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
       const data = await res.json();
       setJobs(data.jobs || []);
     } catch (err) {
@@ -54,40 +45,125 @@ export default function EmployerDashboard() {
     }
   };
 
-  const fetchNotifications = async () => {
+  const handleEditClick = (job) => {
+    setEditJobId(job.id);
+    setEditJobData({ ...job });
+  };
+
+  const handleCancelEdit = () => {
+    setEditJobId(null);
+    setEditJobData({});
+  };
+
+  const handleUpdateJob = async (e) => {
+    e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/jobs/notifications", {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${API_BASE}/jobs/${editJobId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(editJobData),
       });
-      
-      if (!res.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
-      const data = await res.json();
-      setNotifications(data || []);
+      if (!res.ok) throw new Error("Failed to update job");
+      setEditJobId(null);
+      fetchEmployerJobs();
     } catch (err) {
-      console.error("Error fetching notifications:", err);
+      console.error("Error updating job:", err);
     }
   };
 
-  const fetchProfile = async () => {
-    setProfileLoading(true);
+ 
+
+  const handleDeleteJob = async (jobId) => {
     try {
-      const res = await fetch(`http://localhost:5000/users/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await fetch(`${API_BASE}/jobs/${jobId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
       });
-      
-      if (!res.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
-      const data = await res.json();
-      setProfile(data);
+      fetchEmployerJobs();
     } catch (err) {
-      console.error("Profile fetch error:", err);
-    } finally {
-      setProfileLoading(false);
+      console.error("Error deleting job:", err);
+    }
+  };
+
+  const handlePostJob = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API_BASE}/jobs/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: jobTitle,
+          description: jobDesc,
+          location: jobLocation,
+          type: jobType
+        })
+      });
+      if (!res.ok) throw new Error("Failed to post job");
+      setShowJobForm(false);
+      setJobTitle("");
+      setJobDesc("");
+      setJobLocation(TOWNS[0]);
+      setJobType("Full-time");
+      fetchEmployerJobs();
+    } catch (err) {
+      console.error("Error posting job:", err);
+    }
+  };
+
+  const handleApplicantChange = (e) => {
+    const { name, value } = e.target;
+    setEditingApplicantData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditApplicant = (applicant) => {
+    setEditingApplicant(applicant.user_id);
+    setEditingApplicantData(applicant);
+  };
+
+  const handleCancelApplicant = () => {
+    setEditingApplicant(null);
+    setEditingApplicantData({});
+  };
+
+  const handleSaveApplicant = async (userId) => {
+    try {
+      const res = await fetch(`${API_BASE}/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(editingApplicantData)
+      });
+      if (!res.ok) throw new Error("Failed to update applicant");
+      fetchEmployerJobs();
+      setEditingApplicant(null);
+    } catch (err) {
+      console.error("Save error:", err);
+    }
+  };
+
+  const updateProfile = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API_BASE}/users/${user.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(profile)
+      });
+      if (!res.ok) throw new Error("Profile update failed");
+      alert("Profile updated successfully.");
+    } catch (err) {
+      console.error("Error updating profile:", err);
     }
   };
 
@@ -97,8 +173,7 @@ export default function EmployerDashboard() {
     fetchProfile();
   }, []);
 
-  // Add other API functions here (handlePostJob, handleDeleteJob, etc.)
-
+ 
   return (
     <div className="dashboard-container">
       <aside className="sidebar">
@@ -233,7 +308,7 @@ export default function EmployerDashboard() {
                         <button 
                           className="btn btn-primary" 
                           onClick={async () => {
-                            await fetch(`http://localhost:5000/applications/${note.application_id}/accept`, {
+                            await fetch(`${API_BASE}/applications/${note.application_id}/accept`, {
                               method: "PUT",
                               headers: { Authorization: `Bearer ${token}` }
                             });
@@ -245,7 +320,7 @@ export default function EmployerDashboard() {
                         <button 
                           className="btn btn-secondary" 
                           onClick={async () => {
-                            await fetch(`http://localhost:5000/applications/${note.application_id}/decline`, {
+                            await fetch(`${API_BASE}/applications/${note.application_id}/decline`, {
                               method: "PUT",
                               headers: { Authorization: `Bearer ${token}` }
                             });
@@ -390,7 +465,7 @@ export default function EmployerDashboard() {
                                       <button
                                         className="btn btn-action"
                                         onClick={async () => {
-                                          await fetch(`http://localhost:5000/applications/${applicant.application_id}/accept`, {
+                                          await fetch(`${API_BASE}/applications/${applicant.application_id}/accept`, {
                                             method: "PUT",
                                             headers: { Authorization: `Bearer ${token}` }
                                           });
@@ -403,7 +478,7 @@ export default function EmployerDashboard() {
                                       <button
                                         className="btn btn-action"
                                         onClick={async () => {
-                                          await fetch(`http://localhost:5000/applications/${applicant.application_id}/decline`, {
+                                          await fetch(`${API_BASE}/applications/${applicant.application_id}/decline`, {
                                             method: "PUT",
                                             headers: { Authorization: `Bearer ${token}` }
                                           });
@@ -484,3 +559,16 @@ export default function EmployerDashboard() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

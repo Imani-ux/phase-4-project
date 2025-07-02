@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import "./seeker-dashboard.css"; // 👈 Make sure you import the futuristic CSS
+import "./seeker-dashboard.css";
+
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function SeekerDashboard() {
   const [section, setSection] = useState("My Profile");
@@ -21,11 +23,11 @@ export default function SeekerDashboard() {
       fetchApplications();
       fetchProfile();
     }
-  }, [token, user?.id]);
+  }, []);
 
   const fetchJobs = async () => {
     try {
-      const res = await fetch("http://localhost:5000/jobs/", {
+      const res = await fetch(`${BASE_URL}/jobs/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -37,7 +39,7 @@ export default function SeekerDashboard() {
 
   const fetchApplications = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/applications/user/${user.id}`, {
+      const res = await fetch(`${BASE_URL}/applications/user/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -52,7 +54,7 @@ export default function SeekerDashboard() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/users/${user.id}`, {
+      const res = await fetch(`${BASE_URL}/users/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -65,7 +67,7 @@ export default function SeekerDashboard() {
   const updateProfile = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`http://localhost:5000/users/${user.id}`, {
+      const res = await fetch(`${BASE_URL}/users/${user.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -88,7 +90,7 @@ export default function SeekerDashboard() {
   const handleApply = async (jobId) => {
     if (applied.includes(jobId)) return;
     try {
-      const res = await fetch("http://localhost:5000/applications/apply", {
+      const res = await fetch(`${BASE_URL}/applications/apply`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

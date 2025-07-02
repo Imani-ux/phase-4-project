@@ -1,25 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./AdminDashboard.css";
+
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 
 export default function AdminDashboard() {
   const [section, setSection] = useState("Dashboard Overview");
-  const [users, setUsers] = useState([
-    { id: 1, name: "Alice", email: "alice@email.com", role: "Seeker", status: "Active" },
-    { id: 2, name: "Bob", email: "bob@email.com", role: "Employer", status: "Suspended" },
-  ]);
-  const [jobs, setJobs] = useState([
-    { id: 1, title: "Frontend Developer", company: "Acme Corp", status: "Active" },
-    { id: 2, title: "Backend Developer", company: "Beta Ltd", status: "Pending" },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  
 
-  const handleSuspend = (id) => {
-    setUsers(users.map(u => u.id === id ? { ...u, status: "Suspended" } : u));
+  useEffect(() => {
+    fetch(`${BASE_URL}/users/`)
+      .then(res => res.json())
+      .then(data => setUsers(data))
+      .catch(console.error);
+
+    fetch(`${BASE_URL}/jobs/`)
+      .then(res => res.json())
+      .then(data => setJobs(data))
+      .catch(console.error);
+  }, []);
+
+  const updateUserStatus = (id, status) => {
+    fetch(`${BASE_URL}/users/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    })
+      .then(res => res.json())
+      .then(() =>
+        setUsers(users.map(u => (u.id === id ? { ...u, status } : u)))
+      )
+      .catch(console.error);
   };
-  const handleActivate = (id) => {
-    setUsers(users.map(u => u.id === id ? { ...u, status: "Active" } : u));
-  };
-  const handleDeleteJob = (id) => {
-    setJobs(jobs.filter(j => j.id !== id));
+
+  const deleteJob = (id) => {
+    fetch(`${BASE_URL}/jobs/${id}`, { method: "DELETE" })
+      .then(() => setJobs(jobs.filter(j => j.id !== id)))
+      .catch(console.error);
   };
 
   return (
@@ -28,12 +47,9 @@ export default function AdminDashboard() {
         <h3>⚙️ Admin Panel</h3>
         <nav>
           <ul>
-            {['Dashboard Overview', 'Manage Users', 'Job Listings', 'Reports/Complaints', 'Analytics', 'Settings'].map((sec) => (
+            {['Dashboard Overview', 'Manage Users', 'Job Listings', 'Reports/Complaints', 'Analytics', 'Settings'].map(sec => (
               <li key={sec}>
-                <button
-                  onClick={() => setSection(sec)}
-                  className={section === sec ? "active" : ""}
-                >
+                <button onClick={() => setSection(sec)} className={section === sec ? "active" : ""}>
                   {sec}
                 </button>
               </li>
@@ -71,9 +87,9 @@ export default function AdminDashboard() {
                   <td>{u.name}</td><td>{u.email}</td><td>{u.role}</td><td>{u.status}</td>
                   <td>
                     {u.status === "Active" ? (
-                      <button className="btn btn-suspend" onClick={() => handleSuspend(u.id)}>Suspend</button>
+                      <button className="btn btn-suspend" onClick={() => updateUserStatus(u.id, "Suspended")}>Suspend</button>
                     ) : (
-                      <button className="btn btn-activate" onClick={() => handleActivate(u.id)}>Activate</button>
+                      <button className="btn btn-activate" onClick={() => updateUserStatus(u.id, "Active")}>Activate</button>
                     )}
                   </td>
                 </tr>
@@ -94,7 +110,7 @@ export default function AdminDashboard() {
                 <tr key={j.id}>
                   <td>{j.title}</td><td>{j.company}</td><td>{j.status}</td>
                   <td>
-                    <button className="btn btn-delete" onClick={() => handleDeleteJob(j.id)}>Delete</button>
+                    <button className="btn btn-delete" onClick={() => deleteJob(j.id)}>Delete</button>
                   </td>
                 </tr>
               ))}

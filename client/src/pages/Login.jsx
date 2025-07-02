@@ -2,18 +2,20 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/auth/login", {
+      const response = await fetch(`${BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -23,10 +25,11 @@ export default function Login() {
 
       if (!response.ok) {
         setError(data.error || "Login failed");
-        // Redirect to register if user not found
-        if (data.error && data.error.toLowerCase().includes("invalid email")) {
+
+        if (data.error?.toLowerCase().includes("invalid email")) {
           setTimeout(() => navigate("/register"), 1200);
         }
+
         return;
       }
 
@@ -34,7 +37,6 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       const role = data.user.role;
-
       if (role === "admin") navigate("/admin/dashboard");
       else if (role === "employer") navigate("/employer/dashboard");
       else navigate("/seeker/dashboard");
