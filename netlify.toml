@@ -1,0 +1,7 @@
+[build]
+  base = "client"
+  publish = "client/dist"
+  command = "npm run build"
+
+[build.environment]
+  VITE_API_URL = "https://phase-4-project-1-lx7l.onrender.com"
