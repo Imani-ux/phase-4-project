@@ -1,7 +1,11 @@
-from app.database import engine
-from app.models import Base
+# reset_db.py
+from app import create_app
+from app.database import db
 
-print("⚠ Dropping and recreating all tables...")
-Base.metadata.drop_all(engine)
-Base.metadata.create_all(engine)
-print("✅ Database schema reset successfully.")
+app = create_app()
+
+with app.app_context():
+    print("⚠ Dropping and recreating all tables...")
+    db.drop_all()
+    db.create_all()
+    print("✅ Database schema reset successfully.")

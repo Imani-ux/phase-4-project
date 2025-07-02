@@ -1,8 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, Enum, DateTime, func, Boolean
-from sqlalchemy.orm import relationship, declarative_base
+from app.database import db  # ✅ Use shared SQLAlchemy instance
 import enum
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, Enum, DateTime, func, Boolean
+from sqlalchemy.orm import relationship
 
 # --- ENUM for roles ---
 class RoleEnum(enum.Enum):
@@ -11,7 +10,7 @@ class RoleEnum(enum.Enum):
     admin = "admin"
 
 # --- User Model ---
-class User(Base):
+class User(db.Model):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
@@ -19,17 +18,17 @@ class User(Base):
     email = Column(String(100), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     role = Column(Enum(RoleEnum), nullable=False)
+    status = Column(String(20), default="Active")
 
     # Optional profile fields
     bio = Column(Text)
     skills = Column(Text)
     resume_url = Column(String(255))
-    company_name = Column(Text, nullable=True)  # Add this line
+    company_name = Column(Text, nullable=True)
 
     # Relationships
     jobs = relationship("Job", back_populates="employer", cascade="all, delete-orphan")
     applications = relationship("Application", back_populates="user", cascade="all, delete-orphan")
-
     sent_messages = relationship("Message", foreign_keys="[Message.sender_id]", back_populates="sender", cascade="all, delete-orphan")
     received_messages = relationship("Message", foreign_keys="[Message.receiver_id]", back_populates="receiver", cascade="all, delete-orphan")
 
@@ -46,10 +45,11 @@ class User(Base):
             "skills": self.skills,
             "resume_url": self.resume_url,
             "company_name": self.company_name,
+            "status": self.status,
         }
 
 # --- Job Model ---
-class Job(Base):
+class Job(db.Model):
     __tablename__ = 'jobs'
 
     id = Column(Integer, primary_key=True)
@@ -61,7 +61,6 @@ class Job(Base):
 
     employer_id = Column(Integer, ForeignKey("users.id"))
     employer = relationship("User", back_populates="jobs")
-
     applications = relationship("Application", back_populates="job", cascade="all, delete-orphan")
 
     def __repr__(self):
@@ -86,7 +85,7 @@ class Job(Base):
         }
 
 # --- Application Model ---
-class Application(Base):
+class Application(db.Model):
     __tablename__ = 'applications'
 
     id = Column(Integer, primary_key=True)
@@ -112,7 +111,7 @@ class Application(Base):
         }
 
 # --- Message Model ---
-class Message(Base):
+class Message(db.Model):
     __tablename__ = 'messages'
 
     id = Column(Integer, primary_key=True)
@@ -137,7 +136,7 @@ class Message(Base):
         }
 
 # --- Review Model ---
-class Review(Base):
+class Review(db.Model):
     __tablename__ = "reviews"
 
     id = Column(Integer, primary_key=True)
@@ -165,7 +164,7 @@ class Review(Base):
         }
 
 # --- Notification Model ---
-class Notification(Base):
+class Notification(db.Model):
     __tablename__ = "notifications"
 
     id = Column(Integer, primary_key=True)
@@ -173,7 +172,7 @@ class Notification(Base):
     message = Column(Text, nullable=False)
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    application_id = Column(Integer, ForeignKey("applications.id"), nullable=True)  # Add this line
+    application_id = Column(Integer, ForeignKey("applications.id"), nullable=True)
 
     employer = relationship("User")
 

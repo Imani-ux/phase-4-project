@@ -1,9 +1,8 @@
 from flask import Blueprint, jsonify, request
-from app.controllers.user_controller import get_all_users, get_user_by_id, delete_user
+from app.controllers.user_controller import get_all_users, get_user_by_id, delete_user, update_user_status
 from app.controllers.job_controller import get_all_jobs, delete_job
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
-#SAM
 
 # Get all users 
 @admin_bp.route("/users", methods=["GET"])
@@ -18,6 +17,18 @@ def get_user(user_id):
     if not user:
         return jsonify({"error": "User not found"}), 404
     return jsonify(user), 200
+
+# Update user status (Activate/Suspend)
+@admin_bp.route("/users/<int:user_id>", methods=["PUT"])
+def update_user(user_id):
+    data = request.get_json()
+    status = data.get("status")
+    if status not in ["Active", "Suspended"]:
+        return jsonify({"error": "Invalid status"}), 400
+    success = update_user_status(user_id, status)
+    if success:
+        return jsonify({"message": f"User status updated to {status}"}), 200
+    return jsonify({"error": "User not found"}), 404
 
 # Delete user by ID
 @admin_bp.route("/users/<int:user_id>", methods=["DELETE"])

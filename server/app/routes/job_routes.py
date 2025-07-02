@@ -7,9 +7,8 @@ from app.controllers.job_controller import (
     delete_job,
     get_jobs_by_employer_id
 )
-#Tevin
-from app.models import User, RoleEnum, Notification, Application
-from app.database import db_session
+from app.models import User, RoleEnum, Notification, Application, Job
+from app.database import db
 
 job_bp = Blueprint("jobs", __name__, url_prefix="/jobs")
 
@@ -42,7 +41,7 @@ def post_job():
     except Exception:
         return jsonify({"error": "Invalid employer id"}), 400
 
-    employer = db_session.query(User).filter_by(id=employer_id).first()
+    employer = User.query.filter_by(id=employer_id).first()
     if not employer:
         return jsonify({"error": "Employer user does not exist"}), 400
     if employer.role != RoleEnum.employer:
@@ -76,7 +75,7 @@ def list_jobs_by_employer(employer_id):
 @jwt_required()
 def admin_list_jobs_by_employer(employer_id):
     current_user = get_jwt_identity()
-    user = db_session.query(User).filter_by(id=current_user).first()
+    user = User.query.filter_by(id=current_user).first()
     if not user or user.role != RoleEnum.admin:
         return jsonify({"error": "Unauthorized"}), 403
     jobs = get_jobs_by_employer_id(employer_id)
@@ -107,8 +106,7 @@ def update_job(job_id):
     except Exception:
         return jsonify({"error": "Invalid employer id"}), 400
 
-    from app.models import Job
-    job = db_session.query(Job).filter_by(id=job_id, employer_id=employer_id).first()
+    job = Job.query.filter_by(id=job_id, employer_id=employer_id).first()
     if not job:
         return jsonify({"error": "Job not found or not authorized"}), 404
 
@@ -122,7 +120,7 @@ def update_job(job_id):
     if "type" in data:
         job.type = data["type"]
 
-    db_session.commit()
+    db.session.commit()
     return jsonify({"job": job.to_dict()}), 200
 
 # Get notifications for employer
@@ -131,15 +129,15 @@ def update_job(job_id):
 def get_notifications():
     current_user = get_jwt_identity()
     employer_id = int(current_user)
-    notifs = db_session.query(Notification).filter_by(employer_id=employer_id).order_by(Notification.created_at.desc()).all()
+    notifs = Notification.query.filter_by(employer_id=employer_id).order_by(Notification.created_at.desc()).all()
 
     notifications_with_applicant = []
     for n in notifs:
         applicant_name = None
         if n.application_id:
-            app = db_session.query(Application).filter_by(id=n.application_id).first()
+            app = Application.query.filter_by(id=n.application_id).first()
             if app:
-                user = db_session.query(User).filter_by(id=app.user_id).first()
+                user = User.query.filter_by(id=app.user_id).first()
                 if user:
                     applicant_name = user.full_name
         notifications_with_applicant.append({
@@ -153,10 +151,10 @@ def get_notifications():
 @job_bp.route("/<int:job_id>/applicants", methods=["GET"])
 @jwt_required()
 def get_applicants_for_job(job_id):
-    apps = db_session.query(Application).filter_by(job_id=job_id).all()
+    apps = Application.query.filter_by(job_id=job_id).all()
     result = []
     for app in apps:
-        user = db_session.query(User).filter_by(id=app.user_id).first()
+        user = User.query.filter_by(id=app.user_id).first()
         if user:
             result.append({
                 "application_id": app.id,
@@ -177,7 +175,7 @@ def get_applicants_for_job(job_id):
 @jwt_required()
 def update_applicant_profile(user_id):
     data = request.get_json()
-    user = db_session.query(User).filter_by(id=user_id).first()
+    user = User.query.filter_by(id=user_id).first()
     if not user:
         return jsonify({"error": "User not found"}), 404
 
@@ -189,7 +187,7 @@ def update_applicant_profile(user_id):
     if "role" in data and data["role"] in [r.value for r in RoleEnum]:
         user.role = RoleEnum(data["role"])
 
-    db_session.commit()
+    db.session.commit()
     return jsonify({"message": "Applicant profile updated", "user": user.to_dict()}), 200
 
 # Update employer profile (add company_name support)
@@ -197,18 +195,20 @@ def update_applicant_profile(user_id):
 @jwt_required()
 def update_employer_profile(employer_id):
     current_user = get_jwt_identity()
-    user = db_session.query(User).filter_by(id=current_user).first()
+    user = User.query.filter_by(id=current_user).first()
     if not user or (user.role != RoleEnum.admin and user.id != employer_id):
         return jsonify({"error": "Unauthorized"}), 403
-    employer = db_session.query(User).filter_by(id=employer_id, role=RoleEnum.employer).first()
+
+    employer = User.query.filter_by(id=employer_id, role=RoleEnum.employer).first()
     if not employer:
         return jsonify({"error": "Employer not found"}), 404
+
     data = request.get_json()
     employer.full_name = data.get("full_name", employer.full_name)
     employer.bio = data.get("bio", employer.bio)
     employer.skills = data.get("skills", employer.skills)
     employer.resume_url = data.get("resume_url", employer.resume_url)
     employer.company_name = data.get("company_name", employer.company_name)
-    db_session.commit()
-    return jsonify({"message": "Employer profile updated", "user": employer.to_dict()}), 200
 
+    db.session.commit()
+    return jsonify({"message": "Employer profile updated", "user": employer.to_dict()}), 200

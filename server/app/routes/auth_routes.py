@@ -1,11 +1,10 @@
 from flask import Blueprint, request, jsonify
-from app.database import db_session
+from app.database import db  # ✅ Use Flask-SQLAlchemy db
 from app.models import User, RoleEnum
 from app.utils.auth_utils import hash_password, check_password
 from app.utils.jwt_handler import generate_token
-#Sam
 
-auth_bp = Blueprint("auth", __name__, url_prefix="/auth")  # ✅ Renamed from auth_routes to auth_bp
+auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
@@ -18,7 +17,7 @@ def register():
     if not all([full_name, email, password, role]):
         return jsonify({"error": "Missing required fields"}), 400
 
-    existing_user = db_session.query(User).filter_by(email=email).first()
+    existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         return jsonify({"error": "User with that email already exists"}), 409
 
@@ -34,8 +33,8 @@ def register():
         role=user_role
     )
 
-    db_session.add(new_user)
-    db_session.commit()
+    db.session.add(new_user)
+    db.session.commit()
 
     token = generate_token(new_user.id, new_user.role.value)
     return jsonify({
@@ -58,7 +57,7 @@ def login():
     if not all([email, password]):
         return jsonify({"error": "Missing email or password"}), 400
 
-    user = db_session.query(User).filter_by(email=email).first()
+    user = User.query.filter_by(email=email).first()
     if not user or not check_password(password, user.password_hash):
         return jsonify({"error": "Invalid email or password"}), 401
 
